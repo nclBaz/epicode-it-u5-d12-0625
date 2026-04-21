@@ -1,5 +1,6 @@
 package riccardogulin.u5d12.services;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import riccardogulin.u5d12.entities.User;
 import riccardogulin.u5d12.exceptions.NotFoundException;
@@ -11,11 +12,13 @@ import riccardogulin.u5d12.security.TokenTools;
 public class AuthService {
 	private final UsersService usersService;
 	private final TokenTools tokenTools;
+	private final PasswordEncoder bcrypt;
 
-	public AuthService(UsersService usersService, TokenTools tokenTools) {
+	public AuthService(UsersService usersService, TokenTools tokenTools, PasswordEncoder bcrypt) {
 
 		this.usersService = usersService;
 		this.tokenTools = tokenTools;
+		this.bcrypt = bcrypt;
 	}
 
 	public String checkCredentialsAndGenerateToken(LoginDTO body) {
@@ -24,8 +27,7 @@ public class AuthService {
 		try {
 			User found = this.usersService.findByEmail(body.email());
 			// 1.2 Controllo se password corrisponde
-			// TODO: Migliorare gestione password
-			if (found.getPassword().equals(body.password())) {
+			if (this.bcrypt.matches(body.password(), found.getPassword())) {
 				// 2. Se credenziali OK -> Generiamo Token e ritorniamolo
 				return this.tokenTools.generateToken(found);
 

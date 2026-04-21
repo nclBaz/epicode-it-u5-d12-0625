@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import riccardogulin.u5d12.entities.User;
 import riccardogulin.u5d12.exceptions.BadRequestException;
@@ -19,9 +20,12 @@ import java.util.UUID;
 public class UsersService {
 
 	private final UsersRepository usersRepository;
+	private final PasswordEncoder bcrypt;
 
-	public UsersService(UsersRepository usersRepository) {
+	public UsersService(UsersRepository usersRepository, PasswordEncoder bcrypt) {
+
 		this.usersRepository = usersRepository;
+		this.bcrypt = bcrypt;
 	}
 
 	public User save(UserDTO body) {
@@ -30,7 +34,7 @@ public class UsersService {
 			throw new BadRequestException("L'indirizzo email " + body.email() + " è già in uso!");
 
 		// 2. Salvo
-		User newUser = new User(body.name(), body.surname(), body.email(), body.password(), body.dateOfBirth());
+		User newUser = new User(body.name(), body.surname(), body.email(), this.bcrypt.encode(body.password()), body.dateOfBirth());
 		User savedUser = this.usersRepository.save(newUser);
 
 		// 3. Log

@@ -1,5 +1,7 @@
 package riccardogulin.u5d12.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -17,6 +19,7 @@ import java.util.UUID;
 @ToString
 @Getter
 @Setter
+@JsonIgnoreProperties({"accountNonExpired", "accountNonLocked", "authorities", "credentialsNonExpired", "enabled"})
 public class User implements UserDetails {
 
 	@Id
@@ -31,6 +34,7 @@ public class User implements UserDetails {
 	@Column(nullable = false, unique = true)
 	private String email;
 	@Column(nullable = false)
+	@JsonIgnore
 	private String password;
 	@Column(name = "date_of_birth")
 	private LocalDate dateOfBirth;
