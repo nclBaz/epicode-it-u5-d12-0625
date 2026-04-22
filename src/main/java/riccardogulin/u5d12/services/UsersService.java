@@ -12,6 +12,7 @@ import riccardogulin.u5d12.exceptions.BadRequestException;
 import riccardogulin.u5d12.exceptions.NotFoundException;
 import riccardogulin.u5d12.payloads.UserDTO;
 import riccardogulin.u5d12.repositories.UsersRepository;
+import riccardogulin.u5d12.tools.EmailSender;
 
 import java.util.UUID;
 
@@ -21,11 +22,13 @@ public class UsersService {
 
 	private final UsersRepository usersRepository;
 	private final PasswordEncoder bcrypt;
+	private final EmailSender emailSender;
 
-	public UsersService(UsersRepository usersRepository, PasswordEncoder bcrypt) {
+	public UsersService(UsersRepository usersRepository, PasswordEncoder bcrypt, EmailSender emailSender) {
 
 		this.usersRepository = usersRepository;
 		this.bcrypt = bcrypt;
+		this.emailSender = emailSender;
 	}
 
 	public User save(UserDTO body) {
@@ -37,10 +40,13 @@ public class UsersService {
 		User newUser = new User(body.name(), body.surname(), body.email(), this.bcrypt.encode(body.password()), body.dateOfBirth());
 		User savedUser = this.usersRepository.save(newUser);
 
-		// 3. Log
+		// 3. Invio email di registrazione
+		this.emailSender.sendRegistrationEmail(savedUser);
+
+		// 4. Log
 		log.info("L'utente con id " + savedUser.getUserId() + " è stato salvato correttamente!");
 
-		// 4. Ritorno l'utente salvato
+		// 5. Ritorno l'utente salvato
 		return savedUser;
 	}
 
